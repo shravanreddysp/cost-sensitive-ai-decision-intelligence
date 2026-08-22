@@ -1,0 +1,44 @@
+name: Run AI Decision Intelligence Experiment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          pytest -q
+
+      - name: Run full experiment
+        run: |
+          python run_experiment.py \
+            --bootstrap 1000 \
+            --cost-ratios 2 3 5 8 10 \
+            --central-ratio 5 \
+            --risk-aversion 0.25
+
+      - name: Print experiment summary
+        run: |
+          cat results/summary.md
+
+      - name: Upload experiment results
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-sensitive-ai-di-results
+          path: results/
